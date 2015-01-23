@@ -1,0 +1,138 @@
+<html>
+<head>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Splunk Storage Calculator</h1>
+        </div>
+
+        <div class="row">
+            <h3>Cluster Settings</h3>
+
+            <div class="row">
+                <div class="col-xs-3">Number of Indexers</div>
+                <div class="col-xs-2"><input id="indexers" type="text" value="1" /></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">Replication Factor</div>
+                <div class="col-xs-2"><input id="repfactor" type="text" value="1" /></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">Search Factor</div>
+                <div class="col-xs-2"><input id="srchfactor" type="text" value="1" /></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>Retention Policy</h3>
+
+            <div class="row">
+                <div class="col-xs-3">Daily Data Rate (GB)</div>
+                <div class="col-xs-2"><input id="daily" type="text" value="50" /></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">Retention Time (days)</div>
+                <div class="col-xs-2"><input id="retention" type="text" value="90" /></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">Frozen Data Retention Time (days)</div>
+                <div class="col-xs-2"><input id="frozen" type="text" value="180" /></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <button id="calculate">Calculate</button>
+        </div>
+
+        <div class="row" style="display: none"; id="results">
+            <h3>Results</h3>
+
+            <div class="row">
+                <div class="col-xs-1"></div>
+                <div class="col-xs-3"><b>Total Daily Data Per Indexer</b></div>
+                <div class="col-xs-2" id="totalDailyPerIndexer"></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-1"></div>
+                <div class="col-xs-3"><b>Total Daily Frozen Data Per Indexer</b></div>
+                <div class="col-xs-2" id="totalDailyFrozenPerIndexer"></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-1"></div>
+                <div class="col-xs-3"><b>Total Size Per Indexer</b></div>
+                <div class="col-xs-2" id="totalSizePerIndexer"></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-1"></div>
+                <div class="col-xs-3"><b>Total Overall Online Data</b></div>
+                <div class="col-xs-2" id="totalOverallOnlineData"></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-1"></div>
+                <div class="col-xs-3"><b>Total Overall Frozen Data</b></div>
+                <div class="col-xs-2" id="totalOverallFrozenData"></div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+<script>
+$(document).ready(function(){
+    $("#calculate").click(function(){
+        $("#results").hide();
+
+        var indexers = $("#indexers").val();
+        console.log(indexers);
+        var repfactor = $("#repfactor").val();
+        console.log(repfactor);
+        var srchfactor = $("#srchfactor").val();
+        console.log(srchfactor);
+        var daily = $("#daily").val();
+        console.log(daily);
+        var retention = $("#retention").val();
+        console.log(retention);
+        var frozen = $("#frozen").val();
+        console.log(frozen);
+
+        var totalDailyData = ( daily * 0.15 * repfactor ) + (daily * 0.35 * srchfactor );
+        var totalDailyPerIndexer = totalDailyData / indexers;
+        var totalIndexerSize = totalDailyPerIndexer * retention;
+
+        var totalDailyFrozen = daily * 0.15
+        var totalDailyFrozenPerIndexer = totalDailyFrozen / indexers;
+        var totalIndexerFrozen = totalDailyFrozenPerIndexer * frozen;
+
+        var totalSizePerIndexer = totalIndexerSize + totalIndexerFrozen;
+        var totalOverallOnlineData = totalIndexerSize * indexers;
+        var totalOverallFrozenData = totalIndexerFrozen * indexers;
+
+        $("#totalDailyPerIndexer").html(totalDailyPerIndexer + "GB");
+        $("#totalDailyFrozenPerIndexer").html(totalDailyFrozenPerIndexer + "GB");
+        $("#totalSizePerIndexer").html(totalSizePerIndexer + "GB");
+        $("#totalOverallOnlineData").html(totalOverallOnlineData + "GB");
+        $("#totalOverallFrozenData").html(totalOverallFrozenData + "GB");
+
+/*        $("#results").html("")
+            .append("<tr><td><b>Total Size Per Indexer: </b></td><td>" + (totalIndexerSize + totalIndexerFrozen) + "GB</td></tr>")
+            .append("<tr><td><b>Total Overall Online Data: </b></td><td>" + (totalIndexerSize * indexers) + "GB</td></tr>")
+            .append("<tr><td><b>Total Overall Frozen Data: </b></td><td>" + (totalIndexerFrozen * indexers) + "GB</td></tr>")
+            .append("</table");*/
+
+        $("#results").show();
+    });
+});
+</script>
+
+</body>
+</html>
